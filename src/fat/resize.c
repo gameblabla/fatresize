@@ -658,7 +658,7 @@ create_resize_context (PedFileSystem* fs, const PedGeometry* new_geom)
 				        new_cluster_count))
 		goto error;
 
-	new_fs = fat_alloc (new_geom);
+	new_fs = my_fat_alloc (new_geom);
 	if (!new_fs)
 		goto error;
 
@@ -736,7 +736,7 @@ create_resize_context (PedFileSystem* fs, const PedGeometry* new_geom)
 	if (!fat_op_context_create_initial_fat (context))
 		goto error_free_context;
 
-	if (!fat_alloc_buffers (new_fs))
+	if (!my_fat_alloc_buffers (new_fs))
 		goto error_free_fat;
 
 	return context;
@@ -759,7 +759,7 @@ resize_context_assimilate (FatOpContext* ctx)
 	FatSpecific*	old_fs_info = FAT_SPECIFIC (ctx->old_fs);
 	FatSpecific*	new_fs_info = FAT_SPECIFIC (ctx->new_fs);
 
-	fat_free_buffers (ctx->old_fs);
+	my_fat_free_buffers (ctx->old_fs);
 	fat_table_destroy (old_fs_info->fat);
 	free (old_fs_info);
 	ped_geometry_destroy (ctx->old_fs->geom);
@@ -782,7 +782,7 @@ resize_context_abort (FatOpContext* ctx)
 {
 	FatSpecific*	new_fs_info = FAT_SPECIFIC (ctx->new_fs);
 
-	fat_free_buffers (ctx->new_fs);
+	my_fat_free_buffers (ctx->new_fs);
 	fat_table_destroy (new_fs_info->fat);
 	free (new_fs_info);
 	ped_geometry_destroy (ctx->new_fs->geom);

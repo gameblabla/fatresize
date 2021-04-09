@@ -56,7 +56,7 @@ hfsplus_effect_move_extent (PedFileSystem *fs, unsigned int *ptr_fblock,
 	unsigned int		next_to_fblock;
 	unsigned int		start, stop;
 
-	PED_ASSERT (hfsp_block != NULL);
+	PED_ASSERT (my_hfsp_block != NULL);
 	PED_ASSERT (*ptr_to_fblock <= *ptr_fblock);
 	/* quiet GCC */
 	start = stop = 0;
@@ -112,18 +112,18 @@ hfsplus_effect_move_extent (PedFileSystem *fs, unsigned int *ptr_fblock,
 
 		/* move blocks */
 		for (i = 0; i < size; /*i++*/) {
-			j = size - i; j = (j < hfsp_block_count) ?
-					   j : hfsp_block_count ;
+			j = size - i; j = (j < my_hfsp_block_count) ?
+					   j : my_hfsp_block_count ;
 
 			abs_sector = (PedSector) (*ptr_fblock + i) * block_sz;
 			if (!ped_geometry_read (priv_data->plus_geom,
-						hfsp_block, abs_sector,
+						my_hfsp_block, abs_sector,
 						block_sz * j))
 				return -1;
 
 			abs_sector = (PedSector) (start + i) * block_sz;
 			if (!ped_geometry_write (priv_data->plus_geom,
-						 hfsp_block, abs_sector,
+						 my_hfsp_block, abs_sector,
 						 block_sz * j))
 				return -1;
 
@@ -283,15 +283,15 @@ hfsplus_do_move (PedFileSystem* fs, unsigned int *ptr_src,
 		    CR_BTREE :
 			PED_ASSERT(PED_SECTOR_SIZE_DEFAULT * ref->sect_by_block
 				   > ref->ref_offset);
-			if (!hfsplus_file_read(file, hfsp_block,
+			if (!hfsplus_file_read(file, my_hfsp_block,
 				(PedSector)ref->ref_block * ref->sect_by_block,
 				ref->sect_by_block))
 				return -1;
 			extent = ( HfsPExtDescriptor* )
-				( hfsp_block + ref->ref_offset );
+				( my_hfsp_block + ref->ref_offset );
 			extent[ref->ref_index].start_block =
 				PED_CPU_TO_BE32(new_start);
-			if (!hfsplus_file_write(file, hfsp_block,
+			if (!hfsplus_file_write(file, my_hfsp_block,
 				(PedSector)ref->ref_block * ref->sect_by_block,
 				ref->sect_by_block)
 			    || !ped_geometry_sync_fast (priv_data->plus_geom))
@@ -866,7 +866,7 @@ hfsplus_pack_free_space_from_block (PedFileSystem *fs, unsigned int fblock,
 				          + 1 - start - to_free;
 	int			ret;
 
-	PED_ASSERT (!hfsp_block);
+	PED_ASSERT (!my_hfsp_block);
 
 	cache = hfsplus_cache_extents (fs, timer);
 	if (!cache)
@@ -880,21 +880,21 @@ hfsplus_pack_free_space_from_block (PedFileSystem *fs, unsigned int fblock,
 	bytes_buff = PED_BE32_TO_CPU (priv_data->vh->block_size)
 		     * (PedSector) BLOCK_MAX_BUFF;
 	if (bytes_buff > BYTES_MAX_BUFF) {
-		hfsp_block_count = BYTES_MAX_BUFF
+		my_hfsp_block_count = BYTES_MAX_BUFF
 				 / PED_BE32_TO_CPU (priv_data->vh->block_size);
-		if (!hfsp_block_count)
-			hfsp_block_count = 1;
-		bytes_buff = (PedSector) hfsp_block_count
+		if (!my_hfsp_block_count)
+			my_hfsp_block_count = 1;
+		bytes_buff = (PedSector) my_hfsp_block_count
 			     * PED_BE32_TO_CPU (priv_data->vh->block_size);
 	} else
-		hfsp_block_count = BLOCK_MAX_BUFF;
+		my_hfsp_block_count = BLOCK_MAX_BUFF;
 
 	/* If the cache code requests more space, give it to him */
 	if (bytes_buff < hfsc_cache_needed_buffer (cache))
 		bytes_buff = hfsc_cache_needed_buffer (cache);
 
-	hfsp_block = (uint8_t*) ped_malloc (bytes_buff);
-	if (!hfsp_block)
+	my_hfsp_block = (uint8_t*) ped_malloc (bytes_buff);
+	if (!my_hfsp_block)
 		goto error_cache;
 
 	if (!hfsplus_read_bad_blocks (fs)) {
@@ -928,12 +928,12 @@ hfsplus_pack_free_space_from_block (PedFileSystem *fs, unsigned int fblock,
 		ped_timer_update(timer, (float)(to_fblock - start) / divisor);
 	}
 
-	free (hfsp_block); hfsp_block = NULL; hfsp_block_count = 0;
+	free (my_hfsp_block); my_hfsp_block = NULL; my_hfsp_block_count = 0;
 	hfsc_delete_cache (cache);
 	return 1;
 
 error_alloc:
-	free (hfsp_block); hfsp_block = NULL; hfsp_block_count = 0;
+	free (my_hfsp_block); my_hfsp_block = NULL; my_hfsp_block_count = 0;
 error_cache:
 	hfsc_delete_cache (cache);
 	return 0;

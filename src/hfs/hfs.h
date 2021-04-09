@@ -639,9 +639,9 @@ struct _HfsCPrivateLeafRec {
 };
 typedef struct _HfsCPrivateLeafRec HfsCPrivateLeafRec;
 
-extern uint8_t*    hfs_block;
-extern uint8_t*    hfsp_block;
-extern unsigned    hfs_block_count;
-extern unsigned    hfsp_block_count;
+extern uint8_t*    my_hfs_block;
+extern uint8_t*    my_hfsp_block;
+extern unsigned    my_hfs_block_count;
+extern unsigned    my_hfsp_block_count;
 
 #endif /* _HFS_H */

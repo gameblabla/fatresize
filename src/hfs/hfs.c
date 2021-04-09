@@ -39,10 +39,10 @@
 #include "hfs.h"
 #include "probe.h"
 
-uint8_t* hfs_block = NULL;
-uint8_t* hfsp_block = NULL;
-unsigned hfs_block_count;
-unsigned hfsp_block_count;
+uint8_t* my_hfs_block = NULL;
+uint8_t* my_hfsp_block = NULL;
+unsigned my_hfs_block_count;
+unsigned my_hfsp_block_count;
 
 #define HFS_BLOCK_SIZES       ((int[2]){512, 0})
 #define HFSP_BLOCK_SIZES       ((int[2]){512, 0})
@@ -87,7 +87,7 @@ hfs_open (PedGeometry* geom)
 	HfsMasterDirectoryBlock* mdb;
 	HfsPrivateFSData* 	priv_data;
 
-	if (!hfsc_can_use_geom (geom))
+	if (!my_hfsc_can_use_geom (geom))
 		return NULL;
 
 	/* Read MDB */
@@ -409,7 +409,7 @@ hfsplus_open (PedGeometry* geom)
 	PedGeometry*		wrapper_geom;
 	unsigned int		map_sectors;
 
-	if (!hfsc_can_use_geom (geom))
+	if (!my_hfsc_can_use_geom (geom))
 		return NULL;
 
 	fs = (PedFileSystem*) ped_malloc (sizeof (PedFileSystem));
@@ -784,23 +784,23 @@ hfsplus_wrapper_update (PedFileSystem* fs)
 			PED_BE32_TO_CPU (priv_data->vh->total_blocks)
 			* ( PED_BE32_TO_CPU (priv_data->vh->block_size)
 			    / PED_SECTOR_SIZE_DEFAULT );
-	unsigned int		hfs_blocks_embedded =
+	unsigned int		my_hfs_blocks_embedded =
 				    (hfsplus_sect + hfs_sect_block - 1)
 				    / hfs_sect_block;
-	unsigned int		hfs_blocks_embedded_old;
+	unsigned int		my_hfs_blocks_embedded_old;
 
 	/* update HFS wrapper MDB */
-	hfs_blocks_embedded_old = PED_BE16_TO_CPU (
+	my_hfs_blocks_embedded_old = PED_BE16_TO_CPU (
 					hfs_priv_data->mdb->old_new
 					.embedded.location.block_count );
 	hfs_priv_data->mdb->old_new.embedded.location.block_count =
-		PED_CPU_TO_BE16 (hfs_blocks_embedded);
+		PED_CPU_TO_BE16 (my_hfs_blocks_embedded);
 	/* maybe macOS will boot with this */
 	/* update : yes it does \o/ :) */
 	hfs_priv_data->mdb->free_blocks =
 	    PED_CPU_TO_BE16 ( PED_BE16_TO_CPU (hfs_priv_data->mdb->free_blocks)
-	                    + hfs_blocks_embedded_old
-			    - hfs_blocks_embedded );
+	                    + my_hfs_blocks_embedded_old
+			    - my_hfs_blocks_embedded );
 
 	if (!hfs_update_mdb(priv_data->wrapper))
 		return 0;
@@ -817,11 +817,11 @@ hfsplus_wrapper_update (PedFileSystem* fs)
 	for (i = PED_BE16_TO_CPU (
 			hfs_priv_data->mdb->old_new.embedded
 			.location.start_block )
-		 + hfs_blocks_embedded;
+		 + my_hfs_blocks_embedded;
 	     i < PED_BE16_TO_CPU (
 	    		hfs_priv_data->mdb->old_new.embedded
 			.location.start_block )
-		 + hfs_blocks_embedded_old;
+		 + my_hfs_blocks_embedded_old;
 	     i++ ) {
 		CLR_BLOC_OCCUPATION(hfs_priv_data->alloc_map, i);
 	}

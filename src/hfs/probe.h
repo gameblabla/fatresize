@@ -26,7 +26,7 @@
 #include "hfs.h"
 
 int
-hfsc_can_use_geom (PedGeometry* geom);
+my_hfsc_can_use_geom (PedGeometry* geom);
 
 PedGeometry*
 hfs_and_wrapper_probe (PedGeometry* geom);
