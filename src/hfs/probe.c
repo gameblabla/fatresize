@@ -35,7 +35,7 @@
 #include "probe.h"
 
 int
-hfsc_can_use_geom (PedGeometry* geom)
+my_hfsc_can_use_geom (PedGeometry* geom)
 {
 	PedDevice* dev;
 

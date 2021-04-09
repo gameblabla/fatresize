@@ -52,7 +52,7 @@ hfs_effect_move_extent (PedFileSystem *fs, unsigned int *ptr_fblock,
 	unsigned int		next_to_fblock;
 	unsigned int		start, stop;
 
-	PED_ASSERT (hfs_block != NULL);
+	PED_ASSERT (my_hfs_block != NULL);
 	PED_ASSERT (*ptr_to_fblock <= *ptr_fblock);
 	/* quiet gcc */
 	start = stop = 0;
@@ -112,18 +112,18 @@ hfs_effect_move_extent (PedFileSystem *fs, unsigned int *ptr_fblock,
 			PedSector 	abs_sector;
 			unsigned int	ai;
 
-			j = size - i; j = (j < hfs_block_count) ?
-					   j : hfs_block_count ;
+			j = size - i; j = (j < my_hfs_block_count) ?
+					   j : my_hfs_block_count ;
 
 			abs_sector = start_block
 				     + (PedSector) (*ptr_fblock + i) * block_sz;
-			if (!ped_geometry_read (fs->geom, hfs_block, abs_sector,
+			if (!ped_geometry_read (fs->geom, my_hfs_block, abs_sector,
 						block_sz * j))
 				return -1;
 
 			abs_sector = start_block
 				     + (PedSector) (start + i) * block_sz;
-			if (!ped_geometry_write (fs->geom,hfs_block,abs_sector,
+			if (!ped_geometry_write (fs->geom,my_hfs_block,abs_sector,
 						 block_sz * j))
 				return -1;
 
@@ -595,7 +595,7 @@ hfs_pack_free_space_from_block (PedFileSystem *fs, unsigned int fblock,
 				          + 1 - start - to_free;
 	int			ret;
 
-	PED_ASSERT (!hfs_block);
+	PED_ASSERT (!my_hfs_block);
 
 	cache = hfs_cache_extents (fs, timer);
 	if (!cache)
@@ -609,21 +609,21 @@ hfs_pack_free_space_from_block (PedFileSystem *fs, unsigned int fblock,
 	bytes_buff = PED_BE32_TO_CPU (priv_data->mdb->block_size)
 		     * (PedSector) BLOCK_MAX_BUFF;
 	if (bytes_buff > BYTES_MAX_BUFF) {
-		hfs_block_count = BYTES_MAX_BUFF
+		my_hfs_block_count = BYTES_MAX_BUFF
 				 / PED_BE32_TO_CPU (priv_data->mdb->block_size);
-		if (!hfs_block_count)
-			hfs_block_count = 1;
-		bytes_buff = (PedSector) hfs_block_count
+		if (!my_hfs_block_count)
+			my_hfs_block_count = 1;
+		bytes_buff = (PedSector) my_hfs_block_count
 			     * PED_BE32_TO_CPU (priv_data->mdb->block_size);
 	} else
-		hfs_block_count = BLOCK_MAX_BUFF;
+		my_hfs_block_count = BLOCK_MAX_BUFF;
 
 	/* If the cache code requests more space, give it to him */
 	if (bytes_buff < hfsc_cache_needed_buffer (cache))
 		bytes_buff = hfsc_cache_needed_buffer (cache);
 
-	hfs_block = (uint8_t*) ped_malloc (bytes_buff);
-	if (!hfs_block)
+	my_hfs_block = (uint8_t*) ped_malloc (bytes_buff);
+	if (!my_hfs_block)
 		goto error_cache;
 
 	if (!hfs_read_bad_blocks (fs)) {
@@ -655,12 +655,12 @@ hfs_pack_free_space_from_block (PedFileSystem *fs, unsigned int fblock,
 		ped_timer_update(timer, (float)(to_fblock - start)/divisor);
 	}
 
-	free (hfs_block); hfs_block = NULL; hfs_block_count = 0;
+	free (my_hfs_block); my_hfs_block = NULL; my_hfs_block_count = 0;
 	hfsc_delete_cache (cache);
 	return 1;
 
 error_alloc:
-	free (hfs_block); hfs_block = NULL; hfs_block_count = 0;
+	free (my_hfs_block); my_hfs_block = NULL; my_hfs_block_count = 0;
 error_cache:
 	hfsc_delete_cache (cache);
 	return 0;

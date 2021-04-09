@@ -146,10 +146,10 @@ extern PedFileSystemType fat32_type;
 
 extern void fat_print (const PedFileSystem* fs);
 
-extern PedFileSystem* fat_alloc (const PedGeometry* geom);
-extern void fat_free (PedFileSystem* fs);
-extern int fat_alloc_buffers (PedFileSystem* fs);
-extern void fat_free_buffers (PedFileSystem* fs);
+extern PedFileSystem* my_fat_alloc (const PedGeometry* geom);
+extern void my_fat_free (PedFileSystem* fs);
+extern int my_fat_alloc_buffers (PedFileSystem* fs);
+extern void my_fat_free_buffers (PedFileSystem* fs);
 
 extern int fat_resize (PedFileSystem* fs, PedGeometry* geom, PedTimer* timer);
 

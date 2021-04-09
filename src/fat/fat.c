@@ -24,7 +24,7 @@
 #include "labels/misc.h"
 
 PedFileSystem*
-fat_alloc (const PedGeometry* geom)
+my_fat_alloc (const PedGeometry* geom)
 {
 	PedFileSystem*		fs;
 
@@ -55,7 +55,7 @@ error:
 
 /* Requires the boot sector to be analysed */
 int
-fat_alloc_buffers (PedFileSystem* fs)
+my_fat_alloc_buffers (PedFileSystem* fs)
 {
 	FatSpecific*	fs_info = FAT_SPECIFIC (fs);
 
@@ -77,7 +77,7 @@ error:
 };
 
 void
-fat_free_buffers (PedFileSystem* fs)
+my_fat_free_buffers (PedFileSystem* fs)
 {
 	FatSpecific*	fs_info = FAT_SPECIFIC (fs);
 
@@ -86,7 +86,7 @@ fat_free_buffers (PedFileSystem* fs)
 }
 
 void
-fat_free (PedFileSystem* fs)
+my_fat_free (PedFileSystem* fs)
 {
 	FatSpecific* fs_info = (FatSpecific*) fs->type_specific;
 	free (fs_info->boot_sector);
@@ -163,7 +163,7 @@ fat_open (PedGeometry* geom)
 	PedFileSystem*		fs;
 	FatSpecific*		fs_info;
 
-	fs = fat_alloc (geom);
+	fs = my_fat_alloc (geom);
 	if (!fs)
 		goto error;
 	fs_info = (FatSpecific*) fs->type_specific;
@@ -182,7 +182,7 @@ fat_open (PedGeometry* geom)
 
 	if (!_init_fats (fs))
 		goto error_free_fs;
-	if (!fat_alloc_buffers (fs))
+	if (!my_fat_alloc_buffers (fs))
 		goto error_free_fat_table;
 	if (!fat_collect_cluster_info (fs))
 		goto error_free_buffers;
@@ -190,11 +190,11 @@ fat_open (PedGeometry* geom)
 	return fs;
 
 error_free_buffers:
-	fat_free_buffers (fs);
+	my_fat_free_buffers (fs);
 error_free_fat_table:
 	fat_table_destroy (fs_info->fat);
 error_free_fs:
-	fat_free (fs);
+	my_fat_free (fs);
 error:
 	return NULL;
 }
@@ -216,7 +216,7 @@ fat_create (PedGeometry* geom, FatType fat_type, PedTimer* timer)
 	FatSpecific*		fs_info;
 	FatCluster		table_size;
 
-	fs = fat_alloc (geom);
+	fs = my_fat_alloc (geom);
 	if (!fs)
 		goto error;
 	fs_info = (FatSpecific*) fs->type_specific;
@@ -295,7 +295,7 @@ fat_create (PedGeometry* geom, FatType fat_type, PedTimer* timer)
 	if (!fs_info->fat)
 		goto error_free_fs;
 	fat_table_set_cluster_count (fs_info->fat, fs_info->cluster_count);
-	if (!fat_alloc_buffers (fs))
+	if (!my_fat_alloc_buffers (fs))
 		goto error_free_fat_table;
 
 	if (fs_info->fat_type == FAT_TYPE_FAT32) {
@@ -334,11 +334,11 @@ fat_create (PedGeometry* geom, FatType fat_type, PedTimer* timer)
 	return fs;
 
 error_free_buffers:
-	fat_free_buffers (fs);
+	my_fat_free_buffers (fs);
 error_free_fat_table:
 	fat_table_destroy (fs_info->fat);
 error_free_fs:
-	fat_free (fs);
+	my_fat_free (fs);
 error:
 	return NULL;
 }
@@ -360,9 +360,9 @@ fat_close (PedFileSystem* fs)
 {
 	FatSpecific*	fs_info = FAT_SPECIFIC (fs);
 
-	fat_free_buffers (fs);
+	my_fat_free_buffers (fs);
 	fat_table_destroy (fs_info->fat);
-	fat_free (fs);
+	my_fat_free (fs);
 	return 1;
 }
 

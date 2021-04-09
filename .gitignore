@@ -2,3 +2,4 @@
 *.a
 *.gcda
 fatresize
+fatresize_hc
